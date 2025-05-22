@@ -1,6 +1,3 @@
-Here is an updated and polished version of your README file that reflects your server’s port and usage clearly, along with improved formatting and some clarifications:
-
----
 
 # License Project
 
