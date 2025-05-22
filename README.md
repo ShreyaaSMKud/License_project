@@ -201,7 +201,13 @@ Run `python setup_db.py` to initialize.
 * Server-controlled license renewal (clients cannot renew licenses themselves)
 
 ---
+## 📷 Screenshots
 
+**License Request Success**
+![License Request Output](Images/license_request.png)
+
+**License Validation Success**
+![License Validation Output](Images/license_validation.png)
 
 
 ---
