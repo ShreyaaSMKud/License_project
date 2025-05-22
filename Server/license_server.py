@@ -112,13 +112,22 @@ def request_license():
     if not is_mac_approved(mac_address):
         return jsonify({'error': 'MAC address not authorized for license'}), 403
 
+    # ✅ Check if license already exists
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT short_key FROM licenses WHERE mac_address = ?', (mac_address,))
+    existing_license = c.fetchone()
+    conn.close()
+    if existing_license:
+        return jsonify({'error': 'License already exists for this MAC address'}), 409
+
+    # Create new license
     duration_days = data.get('duration_days', 30)
     max_activations = data.get('max_activations', 3)
-
     expiry_date = (datetime.utcnow() + timedelta(days=duration_days)).strftime('%Y-%m-%d')
-
     jwt_token = create_jwt_license(mac_address, expiry_date, max_activations)
 
+    # Generate unique short key
     short_key = generate_short_key(jwt_token)
     attempts = 0
     while not is_short_key_unique(short_key) and attempts < 5:
@@ -128,14 +137,14 @@ def request_license():
     if attempts == 5:
         return jsonify({'error': 'Could not generate unique license key, try again'}), 500
 
+    # Save license
     save_license(mac_address, short_key, jwt_token, expiry_date, max_activations)
 
     return jsonify({
         'mac_address': mac_address,
         'license_key': short_key,
         'expiry_date': expiry_date
-    })
-
+    }), 200
 @app.route('/validate-license', methods=['POST'])
 def validate_license():
     data = request.json
